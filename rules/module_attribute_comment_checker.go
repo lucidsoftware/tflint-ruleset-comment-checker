@@ -12,11 +12,7 @@ import (
 // ModuleAttributeCommentCheckerRule checks whether module attributes have comments
 type ModuleAttributeCommentCheckerRule struct {
 	tflint.DefaultRule
-}
-
-// ModuleAttributeCommentCheckerRuleConfig is the config for ModuleAttributeCommentCheckerRule
-type ModuleAttributeCommentCheckerRuleConfig struct {
-	AttributeNames []string `hclext:"attribute_names"`
+	attributeNames []string
 }
 
 // NewModuleAttributeCommentCheckerRule returns a new rule
@@ -31,8 +27,7 @@ func (r *ModuleAttributeCommentCheckerRule) Name() string {
 
 // Enabled returns whether the rule is enabled by default
 func (r *ModuleAttributeCommentCheckerRule) Enabled() bool {
-	// Need to configure attribute_names
-	return false
+	return true
 }
 
 // Severity returns the rule severity
@@ -45,16 +40,15 @@ func (r *ModuleAttributeCommentCheckerRule) Link() string {
 	return ""
 }
 
+// SetConfig sets the attribute names to check from plugin configuration
+func (r *ModuleAttributeCommentCheckerRule) SetConfig(attributeNames []string) {
+	r.attributeNames = attributeNames
+}
+
 // Check checks whether configured attributes in module calls have comments
 func (r *ModuleAttributeCommentCheckerRule) Check(runner tflint.Runner) error {
-	// Get rule configuration
-	config := &ModuleAttributeCommentCheckerRuleConfig{}
-	if err := runner.DecodeRuleConfig(r.Name(), config); err != nil {
-		return err
-	}
-
 	// If no attributes configured, nothing to check
-	if len(config.AttributeNames) == 0 {
+	if len(r.attributeNames) == 0 {
 		return nil
 	}
 
@@ -83,7 +77,7 @@ func (r *ModuleAttributeCommentCheckerRule) Check(runner tflint.Runner) error {
 	// Check each module block
 	for _, module := range modules.Blocks {
 		// Check each configured attribute
-		for _, attrName := range config.AttributeNames {
+		for _, attrName := range r.attributeNames {
 			if attr, exists := module.Body.Attributes[attrName]; exists {
 				// Check if there's a comment immediately preceding this attribute
 				if !hasCommentBefore(attr, files[attr.Range.Filename]) {

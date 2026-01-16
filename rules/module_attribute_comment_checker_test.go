@@ -9,10 +9,10 @@ import (
 
 func Test_ModuleAttributeCommentCheckerRule(t *testing.T) {
 	tests := []struct {
-		Name     string
-		Content  string
-		Config   string
-		Expected helper.Issues
+		Name           string
+		Content        string
+		AttributeNames []string
+		Expected       helper.Issues
 	}{
 		{
 			Name: "attribute with comment - no issue",
@@ -22,12 +22,8 @@ module "example" {
   # This is a comment for instance_type
   instance_type = "t2.micro"
 }`,
-			Config: `
-rule "module_attribute_comment_checker" {
-  enabled = true
-  attribute_names = ["instance_type"]
-}`,
-			Expected: helper.Issues{},
+			AttributeNames: []string{"instance_type"},
+			Expected:       helper.Issues{},
 		},
 		{
 			Name: "attribute without comment - issue found",
@@ -36,11 +32,7 @@ module "example" {
   source = "./modules/example"
   instance_type = "t2.micro"
 }`,
-			Config: `
-rule "module_attribute_comment_checker" {
-  enabled = true
-  attribute_names = ["instance_type"]
-}`,
+			AttributeNames: []string{"instance_type"},
 			Expected: helper.Issues{
 				{
 					Rule:    NewModuleAttributeCommentCheckerRule(),
@@ -64,11 +56,7 @@ module "example" {
   # Comment for name
   name = "test"
 }`,
-			Config: `
-rule "module_attribute_comment_checker" {
-  enabled = true
-  attribute_names = ["instance_type", "count", "name"]
-}`,
+			AttributeNames: []string{"instance_type", "count", "name"},
 			Expected: helper.Issues{
 				{
 					Rule:    NewModuleAttributeCommentCheckerRule(),
@@ -88,12 +76,8 @@ module "example" {
   source = "./modules/example"
   other_attr = "value"
 }`,
-			Config: `
-rule "module_attribute_comment_checker" {
-  enabled = true
-  attribute_names = ["instance_type"]
-}`,
-			Expected: helper.Issues{},
+			AttributeNames: []string{"instance_type"},
+			Expected:       helper.Issues{},
 		},
 		{
 			Name: "multiple modules - some with comments",
@@ -108,11 +92,7 @@ module "without_comment" {
   source = "./modules/example"
   instance_type = "t2.small"
 }`,
-			Config: `
-rule "module_attribute_comment_checker" {
-  enabled = true
-  attribute_names = ["instance_type"]
-}`,
+			AttributeNames: []string{"instance_type"},
 			Expected: helper.Issues{
 				{
 					Rule:    NewModuleAttributeCommentCheckerRule(),
@@ -133,12 +113,8 @@ module "example" {
   // This is a double-slash comment
   instance_type = "t2.micro"
 }`,
-			Config: `
-rule "module_attribute_comment_checker" {
-  enabled = true
-  attribute_names = ["instance_type"]
-}`,
-			Expected: helper.Issues{},
+			AttributeNames: []string{"instance_type"},
+			Expected:       helper.Issues{},
 		},
 		{
 			Name: "empty attribute names - no issues",
@@ -147,20 +123,17 @@ module "example" {
   source = "./modules/example"
   instance_type = "t2.micro"
 }`,
-			Config: `
-rule "module_attribute_comment_checker" {
-  enabled = true
-  attribute_names = []
-}`,
-			Expected: helper.Issues{},
+			AttributeNames: []string{},
+			Expected:       helper.Issues{},
 		},
 	}
 
-	rule := NewModuleAttributeCommentCheckerRule()
-
 	for _, test := range tests {
 		t.Run(test.Name, func(t *testing.T) {
-			runner := helper.TestRunner(t, map[string]string{"resource.tf": test.Content, ".tflint.hcl": test.Config})
+			rule := NewModuleAttributeCommentCheckerRule()
+			rule.SetConfig(test.AttributeNames)
+			
+			runner := helper.TestRunner(t, map[string]string{"resource.tf": test.Content})
 
 			if err := rule.Check(runner); err != nil {
 				t.Fatalf("Unexpected error occurred: %s", err)

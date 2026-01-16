@@ -39,7 +39,7 @@ plugin "template" {
 |aws_s3_bucket_example_lifecycle_rule|Example rule for accessing top-level/nested blocks and attributes under the blocks|ERROR|✔||
 |google_compute_ssl_policy|Example rule with a custom rule config|WARNING|✔||
 |terraform_backend_type|Example rule for accessing other than resources|ERROR|✔||
-|module_attribute_comment_checker|Checks if specified module call attributes have comments immediately preceding them|WARNING|✖||
+|module_attribute_comment_checker|Checks if specified module call attributes have comments immediately preceding them|WARNING|✔||
 
 ### module_attribute_comment_checker
 
@@ -47,8 +47,10 @@ This rule checks that specified attributes in Terraform module calls have commen
 
 **Configuration:**
 
+The attribute names are configured at the plugin level:
+
 ```hcl
-rule "module_attribute_comment_checker" {
+plugin "template" {
   enabled = true
   attribute_names = ["instance_type", "count", "environment"]
 }
