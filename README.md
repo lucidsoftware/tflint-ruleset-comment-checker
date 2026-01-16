@@ -39,6 +39,44 @@ plugin "template" {
 |aws_s3_bucket_example_lifecycle_rule|Example rule for accessing top-level/nested blocks and attributes under the blocks|ERROR|✔||
 |google_compute_ssl_policy|Example rule with a custom rule config|WARNING|✔||
 |terraform_backend_type|Example rule for accessing other than resources|ERROR|✔||
+|module_attribute_comment_checker|Checks if specified module call attributes have comments immediately preceding them|WARNING|✖||
+
+### module_attribute_comment_checker
+
+This rule checks that specified attributes in Terraform module calls have comments immediately preceding them. This is useful for ensuring that important configuration decisions are documented.
+
+**Configuration:**
+
+```hcl
+rule "module_attribute_comment_checker" {
+  enabled = true
+  attribute_names = ["instance_type", "count", "environment"]
+}
+```
+
+**Example of valid code:**
+
+```hcl
+module "example" {
+  source = "./modules/example"
+  
+  # Specifying t2.micro for cost optimization
+  instance_type = "t2.micro"
+  
+  # Running 3 instances for high availability
+  count = 3
+}
+```
+
+**Example of invalid code:**
+
+```hcl
+module "example" {
+  source = "./modules/example"
+  instance_type = "t2.micro"  # Missing comment before this line
+  count = 3                    # Missing comment before this line
+}
+```
 
 ## Building the plugin
 
