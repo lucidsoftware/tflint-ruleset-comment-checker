@@ -73,8 +73,8 @@ module "example" {
 ```hcl
 module "example" {
   source = "./modules/example"
-  instance_type = "t2.micro"  # Missing comment before this line
-  count = 3                    # Missing comment before this line
+  instance_type = "t2.micro"
+  count = 3
 }
 ```
 

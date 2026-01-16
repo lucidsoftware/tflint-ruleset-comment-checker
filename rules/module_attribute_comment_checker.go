@@ -115,8 +115,9 @@ func hasCommentBefore(attr *hclext.Attribute, file *hcl.File) bool {
 	// Get the file bytes
 	lines := strings.Split(string(file.Bytes), "\n")
 
-	// Check if there's a previous line
-	if attrLine <= 1 || attrLine > len(lines) {
+	// Check if there's a previous line and if attrLine is within bounds
+	// attrLine is 1-indexed, so we need attrLine-2 to be valid (>=0 and < len(lines))
+	if attrLine <= 1 || attrLine-1 >= len(lines) {
 		return false
 	}
 
