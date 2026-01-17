@@ -1,4 +1,4 @@
-module github.com/terraform-linters/tflint-ruleset-template
+module github.com/lucidsoftware/tflint-ruleset-comment-checker
 
 go 1.25.3
 

@@ -1,2 +1,4 @@
 # don't track built binary
-/tflint-ruleset-template
+/tflint-ruleset-comment-checker
+# allow creating a config file for local testing
+/.tflint.hcl

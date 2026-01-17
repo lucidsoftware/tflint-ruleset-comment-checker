@@ -1,16 +1,17 @@
-# TFLint Ruleset Template
-[![Build Status](https://github.com/terraform-linters/tflint-ruleset-template/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/terraform-linters/tflint-ruleset-template/actions)
+# TFLint Ruleset For Requiring Comments
+[![Build Status](https://github.com/lucidsoftware/tflint-ruleset-comment-checker/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/lucidsoftware/tflint-ruleset-comment-checker/actions)
 
-This is a template repository for building a custom ruleset. You can create a plugin repository from "Use this template". See also [Writing Plugins](https://github.com/terraform-linters/tflint/blob/master/docs/developer-guide/plugins.md).
+This is a [tflint](https://github.com/terraform-linters/tflint) plugin that allows you to specify attributes on modules that are required to have comments on them
+(for example to explain why a non-default value is being used).
+
+In the future thsi may be expanded to support requiring comments in other places as well.
 
 ## Requirements
 
 - TFLint v0.46+
-- Go v1.25
+- Go v1.25.3
 
 ## Installation
-
-TODO: This template repository does not contain release binaries, so this installation will not work. Please rewrite for your repository. See the "Building the plugin" section to get this template ruleset working.
 
 You can install the plugin with `tflint --init`. Declare a config in `.tflint.hcl` as follows:
 
@@ -19,14 +20,19 @@ plugin "template" {
   enabled = true
 
   version = "0.1.0"
-  source  = "github.com/terraform-linters/tflint-ruleset-template"
+  source  = "github.com/lucidsoftware/tflint-ruleset-comment-checker"
 
   signing_key = <<-KEY
-  -----BEGIN PGP PUBLIC KEY BLOCK-----
-  mQINBGCqS2YBEADJ7gHktSV5NgUe08hD/uWWPwY07d5WZ1+F9I9SoiK/mtcNGz4P
-  JLrYAIUTMBvrxk3I+kuwhp7MCk7CD/tRVkPRIklONgtKsp8jCke7FB3PuFlP/ptL
-  SlbaXx53FCZSOzCJo9puZajVWydoGfnZi5apddd11Zw1FuJma3YElHZ1A1D2YvrF
-  ...
+    -----BEGIN PGP PUBLIC KEY BLOCK-----
+
+    mDMEaWtJCxYJKwYBBAHaRw8BAQdAJZ4V4dCqaxSlpC+BEz6xe7I6dqezSPVh/dgS
+    T/4UY3u0JUx1Y2lkIFNvZnR3YXJlLCBJbmMuICh0ZmxpbnQgc2lnbmluZymIlgQT
+    FgoAPgIbAwULCQgHAgIiAgYVCgkICwIEFgIDAQIeBwIXgBYhBOxebUuPZXpkg4Vq
+    +MBvK4kkvJxJBQJpa0nFAhkBAAoJEMBvK4kkvJxJ58MA+gM3Z5LLsk5FA/1UvNpA
+    5a+g+roGFd7G0x1zL23vFQEwAP9QaUn96ez9XHdvVaq9q0RAeft+STQV91YCwv1V
+    O/r8Aw==
+    =sc5Q
+    -----END PGP PUBLIC KEY BLOCK-----
   KEY
 }
 ```
@@ -35,13 +41,9 @@ plugin "template" {
 
 |Name|Description|Severity|Enabled|Link|
 | --- | --- | --- | --- | --- |
-|aws_instance_example_type|Example rule for accessing and evaluating top-level attributes|ERROR|✔||
-|aws_s3_bucket_example_lifecycle_rule|Example rule for accessing top-level/nested blocks and attributes under the blocks|ERROR|✔||
-|google_compute_ssl_policy|Example rule with a custom rule config|WARNING|✔||
-|terraform_backend_type|Example rule for accessing other than resources|ERROR|✔||
-|module_attribute_comment_checker|Checks if specified module call attributes have comments immediately preceding them|WARNING|✔||
+|module_attribute_comments|Checks if specified module call attributes have comments immediately preceding them|ERROR|-||
 
-### module_attribute_comment_checker
+### module_attribute_comments
 
 This rule checks that specified attributes in Terraform module calls have comments immediately preceding them. This is useful for ensuring that important configuration decisions are documented.
 
@@ -52,7 +54,15 @@ The attribute names are configured at the plugin level:
 ```hcl
 plugin "template" {
   enabled = true
-  attribute_names = ["instance_type", "count", "environment"]
+
+  attribute {
+    name = "instance_type"
+    message = "Explain why default instance_type was overriden."
+  }
+  attribute {
+    name = "count"
+    # message is optional, but recommended
+  }
 }
 ```
 
@@ -61,10 +71,10 @@ plugin "template" {
 ```hcl
 module "example" {
   source = "./modules/example"
-  
+
   # Specifying t2.micro for cost optimization
   instance_type = "t2.micro"
-  
+
   # Running 3 instances for high availability
   count = 3
 }
@@ -98,7 +108,7 @@ You can run the built plugin like the following:
 
 ```
 $ cat << EOS > .tflint.hcl
-plugin "template" {
+plugin "comment-checker" {
   enabled = true
 }
 EOS
