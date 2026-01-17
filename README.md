@@ -17,6 +17,7 @@ You can install the plugin with `tflint --init`. Declare a config in `.tflint.hc
 
 ```hcl
 plugin "template" {
+
   enabled = true
 
   version = "0.1.0"
@@ -52,13 +53,15 @@ This rule checks that specified attributes in Terraform module calls have commen
 The attribute names are configured at the plugin level:
 
 ```hcl
-plugin "template" {
+rule "module_attribute_comments" {
   enabled = true
 
   attribute {
     name = "instance_type"
     message = "Explain why default instance_type was overriden."
   }
+
+
   attribute {
     name = "count"
     # message is optional, but recommended
