@@ -16,23 +16,25 @@ In the future thsi may be expanded to support requiring comments in other places
 You can install the plugin with `tflint --init`. Declare a config in `.tflint.hcl` as follows:
 
 ```hcl
-plugin "comments" {
+plugin "comment-checker" {
 
   enabled = true
 
-  version = "0.1.0"
+  version = "0.1.1"
   source  = "github.com/lucidsoftware/tflint-ruleset-comment-checker"
 
+  # Optionally omit this to use Keyless verification
   signing_key = <<-KEY
     -----BEGIN PGP PUBLIC KEY BLOCK-----
 
-    mDMEaWtJCxYJKwYBBAHaRw8BAQdAJZ4V4dCqaxSlpC+BEz6xe7I6dqezSPVh/dgS
-    T/4UY3u0JUx1Y2lkIFNvZnR3YXJlLCBJbmMuICh0ZmxpbnQgc2lnbmluZymIlgQT
-    FgoAPgIbAwULCQgHAgIiAgYVCgkICwIEFgIDAQIeBwIXgBYhBOxebUuPZXpkg4Vq
-    +MBvK4kkvJxJBQJpa0nFAhkBAAoJEMBvK4kkvJxJ58MA+gM3Z5LLsk5FA/1UvNpA
-    5a+g+roGFd7G0x1zL23vFQEwAP9QaUn96ez9XHdvVaq9q0RAeft+STQV91YCwv1V
-    O/r8Aw==
-    =sc5Q
+    mG8EaXACCRMFK4EEACIDAwQdSSKnORcu1YozK8MQMrLJ4LBN171J/Zf3G//FUxX8
+    hvlh1CyPvcTgi1UYuj8wWCF19L2GazNv32MmPDk9ueGzfmTsp5ONHddg4Tiu6SZV
+    zgfkfyrhJfq9h4A1FTYq0oC0JUx1Y2lkIFNvZnR3YXJlLCBJbmMuICh0ZmxpbnQg
+    c2lnbmluZymIswQTEwkAOxYhBC/Y2UK9yTIieUACoT8p7Wh2KOJWBQJpcAIJAhsD
+    BQsJCAcCAiICBhUKCQgLAgQWAgMBAh4HAheAAAoJED8p7Wh2KOJWUV4BgIuR7YuX
+    ON5YSi9+XPbg6zxEihHRp9NWs76ipYHJdd5eXKRYeW69MrQgr7TY5TyDFwF/Q2Be
+    1Xy0JwzT5zmg6vnwPc3+9I5oq7rWEEbKAP4PZd0pYLsH5MqghYrcE1FCXf7+
+    =LNHa
     -----END PGP PUBLIC KEY BLOCK-----
   KEY
 }
