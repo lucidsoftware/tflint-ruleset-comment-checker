@@ -16,7 +16,7 @@ In the future thsi may be expanded to support requiring comments in other places
 You can install the plugin with `tflint --init`. Declare a config in `.tflint.hcl` as follows:
 
 ```hcl
-plugin "template" {
+plugin "comments" {
 
   enabled = true
 
