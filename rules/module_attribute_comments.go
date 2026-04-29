@@ -8,6 +8,7 @@ import (
 	"github.com/terraform-linters/tflint-plugin-sdk/hclext"
 	"github.com/terraform-linters/tflint-plugin-sdk/logger"
 	"github.com/terraform-linters/tflint-plugin-sdk/tflint"
+	"github.com/zclconf/go-cty/cty"
 )
 
 // ModuleAttributeCommentsRule checks whether module attributes have comments
@@ -70,24 +71,20 @@ func (r *ModuleAttributeCommentsRule) Check(runner tflint.Runner) error {
 
 	// Check each module block
 	for _, module := range modules.Blocks {
+		moduleName := module.Labels[0]
 		// Check each configured attribute
 		for _, input := range config.Attributes {
 			if attr, exists := module.Body.Attributes[input.Name]; exists {
-				file, err := runner.GetFile(attr.Range.Filename)
+				err = r.checkAttributeHasComment(runner, input, moduleName, attr.Range)
 				if err != nil {
 					return err
 				}
-				// Check if there's a comment immediately preceding this attribute
-				if !hasCommentBefore(attr, file) {
-					err := runner.EmitIssue(
-						r,
-						fmt.Sprintf("%q in module %q should have a comment. %s", input.Name, module.Labels[0], input.Message),
-						attr.Range,
-					)
-					if err != nil {
-						return err
-					}
-				}
+			}
+		}
+		// Recursively search object-valued attributes for matching keys
+		for _, attr := range module.Body.Attributes {
+			if err := r.checkObjectExpr(runner, config, moduleName, attr.Expr); err != nil {
+				return err
 			}
 		}
 	}
@@ -95,14 +92,55 @@ func (r *ModuleAttributeCommentsRule) Check(runner tflint.Runner) error {
 	return nil
 }
 
+func (r *ModuleAttributeCommentsRule) checkAttributeHasComment(runner tflint.Runner, rule CommentRule, moduleName string, attrRange hcl.Range) error {
+	file, err := runner.GetFile(attrRange.Filename)
+	if err != nil {
+		return err
+	}
+	if !hasCommentBefore(attrRange, file) {
+		if err := runner.EmitIssue(
+			r,
+			fmt.Sprintf("%q in module %q should have a comment. %s", rule.Name, moduleName, rule.Message),
+			attrRange,
+		); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (r *ModuleAttributeCommentsRule) checkObjectExpr(runner tflint.Runner, config *InputCommentRuleConfig, moduleName string, expr hcl.Expression) error {
+	kvPairs, diags := hcl.ExprMap(expr)
+	if diags.HasErrors() || kvPairs == nil {
+		return nil
+	}
+	for _, kv := range kvPairs {
+		keyVal, diags := kv.Key.Value(nil)
+		if !diags.HasErrors() && keyVal.Type() == cty.String {
+			keyName := keyVal.AsString()
+			for _, input := range config.Attributes {
+				if input.Name == keyName {
+					if err := r.checkAttributeHasComment(runner, input, moduleName, kv.Key.StartRange()); err != nil {
+						return err
+					}
+				}
+			}
+		}
+		if err := r.checkObjectExpr(runner, config, moduleName, kv.Value); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 // hasCommentBefore checks if there's a comment on the line immediately before the attribute
-func hasCommentBefore(attr *hclext.Attribute, file *hcl.File) bool {
+func hasCommentBefore(attrRange hcl.Range, file *hcl.File) bool {
 	if file == nil {
 		return false
 	}
 
 	// Get the byte at the beginning of the attribute definition
-	start := attr.Range.Start.Byte
+	start := attrRange.Start.Byte
 
 	// Figure out the range of the previous line before the atttribute occurance
 	prevLineEnd := bytes.LastIndexByte(file.Bytes[:start], '\n')

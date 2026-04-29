@@ -139,6 +139,41 @@ module "example" {
 			Expected: helper.Issues{},
 		},
 		{
+			Name: "nested object key with comment - no issue",
+			Content: `
+module "example" {
+  source = "./modules/example"
+  ec2 = {
+    # Comment for instance_type
+    instance_type = "t2.micro"
+  }
+}`,
+			Config:   basicConfig,
+			Expected: helper.Issues{},
+		},
+		{
+			Name: "nested object key without comment - issue found",
+			Content: `
+module "example" {
+  source = "./modules/example"
+  ec2 = {
+    instance_type = "t2.micro"
+  }
+}`,
+			Config: basicConfig,
+			Expected: helper.Issues{
+				{
+					Rule:    &ModuleAttributeCommentsRule{},
+					Message: `"instance_type" in module "example" should have a comment. Must explain override.`,
+					Range: hcl.Range{
+						Filename: "resource.tf",
+						Start:    hcl.Pos{Line: 5, Column: 5},
+						End:      hcl.Pos{Line: 5, Column: 18},
+					},
+				},
+			},
+		},
+		{
 			Name: "empty attribute names - no issues",
 			Content: `
 module "example" {

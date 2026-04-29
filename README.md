@@ -50,6 +50,8 @@ plugin "comment-checker" {
 
 This rule checks that specified attributes in Terraform module calls have comments immediately preceding them. This is useful for ensuring that important configuration decisions are documented.
 
+It also recursively searches through any literal objects passed to the module for keys that match the name.
+
 **Configuration:**
 
 The attribute names are configured at the plugin level:
