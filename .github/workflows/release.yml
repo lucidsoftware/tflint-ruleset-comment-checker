@@ -35,6 +35,6 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
-    - uses: actions/attest@3ce36fa7a1526f98d088367d8ed0aef9a9a37295 # v4.1.0
+    - uses: actions/attest@f7c74d28b9d84cb8768d0b8ca14a4bac6ef463e6 # v4.1.0
       with:
         subject-path: 'dist/checksums.txt'
